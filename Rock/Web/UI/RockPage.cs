@@ -262,6 +262,9 @@ namespace Rock.Web.UI
             {
                 sm = new ScriptManager();
                 sm.ID = "sManager";
+                sm.EnableHistory = true;
+                sm.EnableSecureHistoryState = false;
+                sm.Navigate += sm_Navigate;
                 Page.Form.Controls.AddAt( 0, sm );
             }
 
@@ -623,6 +626,24 @@ namespace Rock.Web.UI
                         Response.Cache.SetExpires( DateTime.Now.AddSeconds( CurrentPage.OutputCacheDuration ) );
                         Response.Cache.SetValidUntilExpires( true );
                     }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Handles the Navigate event of the sm control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="HistoryEventArgs" /> instance containing the event data.</param>
+        protected void sm_Navigate( object sender, HistoryEventArgs e )
+        {
+            if ( e.State.Count == 1 )
+            {
+                string itemKey = e.State.Keys[0];
+                int itemKeyValue = e.State[itemKey].AsInteger() ?? 0;
+                foreach ( IDetailBlock detailBlock in this.RockBlocks.Where( a => a is IDetailBlock ) )
+                {
+                    detailBlock.ShowDetail( itemKey, itemKeyValue );
                 }
             }
         }

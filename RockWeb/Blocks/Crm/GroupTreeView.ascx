@@ -16,22 +16,43 @@
                 showGroupDetails(groupId);
             }
 
+            function getInitialGroupIdFromHash() {
+                debugger 
+                var hashValues = location.hash.match(new RegExp('groupId=([^&]*)'));
+                if (hashValues) {
+                    return hashValues[1];
+                }
+                return null;
+            }
+
             function showGroupDetails(groupId) {
                 __doPostBack('<%= upGroupType.ClientID %>', 'groupId=' + groupId);
             }
 
             function onDataBound(e) {
-                // automatically select the first item in the treeview if there isn't one currently selected
+                // automatically select the first item or initial item in the treeview if there isn't one currently selected
                 var treeViewData = $('.groupTreeview').data("kendoTreeView");
                 var selectedNode = treeViewData.select();
                 var nodeData = this.dataItem(selectedNode);
                 if (!nodeData) {
-                    var firstItem = treeViewData.root[0].firstChild;
+                    var initialGroupId = getInitialGroupIdFromHash();
+                    var initialGroupItem = this.dataSource.get(initialGroupId);
+                    debugger
+                    var firstItem = null;
+                    if (initialGroupId) {
+                        if (initialGroupItem) {
+                            firstItem = treeViewData.findByUid(initialGroupItem.uid);
+                        }
+                    }
+                    else {
+                        firstItem = treeViewData.root[0].firstChild;
+                    }
                     var firstDataItem = this.dataItem(firstItem);
                     if (firstDataItem) {
                         treeViewData.select(firstItem);
                         showGroupDetails(firstDataItem.id);
                     }
+
                 }
             }
 
@@ -59,11 +80,17 @@
             $('.groupTreeview').kendoTreeView({
                 template: "<i class='#= item.GroupTypeIconCssClass #'></i> #= item.Name #",
                 dataSource: groupList,
+                loadOnDemand: true,
                 dataTextField: 'Name',
                 dataImageUrlField: 'GroupTypeIconSmallUrl',
                 select: onSelect,
                 dataBound: onDataBound
             });
+
+            if (getInitialGroupIdFromHash()) {
+                var treeViewData = $('.groupTreeview').data("kendoTreeView");
+                treeViewData.expand(".k-item");
+            }
         </script>
     </ContentTemplate>
 </asp:UpdatePanel>

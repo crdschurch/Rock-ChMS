@@ -278,6 +278,8 @@ namespace RockWeb.Blocks.Crm
                 return;
             }
 
+            ScriptManager.GetCurrent(this.Page).AddHistoryPoint( itemKey, itemKeyValue.ToString() );
+
             pnlDetails.Visible = true;
             Group group = null;
 
